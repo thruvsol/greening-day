@@ -1,0 +1,45 @@
+name: Commit Now Manual
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Jumlah commit yang ingin dibuat'
+        required: true
+        default: '6'
+      commit_message:
+        description: 'Pesan commit'
+        required: true
+        default: 'feat: add greening activity'
+
+jobs:
+  manual_commit_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate and Commit Changes
+        run: |
+          # Konfigurasi user
+          git config --local user.email "nerddevlabs@gmail.com"
+          git config --local user.name "thruvsol"
+          
+          # Ambil jumlah limit dari input
+          limit=${{ github.event.inputs.limit }}
+          echo "Akan membuat ${limit} commit..."
+          
+          # Perulangan (loop) yang sudah diperbaiki
+          for (( i=1; i<=${limit}; i++ ))
+          do
+            # Membuat konten unik untuk setiap commit
+            echo "Manual commit ke-$i pada $(date)" > LAST_UPDATED_MANUAL
+            git add LAST_UPDATED_MANUAL
+            # Melakukan commit dengan pesan dari input
+            git commit -m "${{ github.event.inputs.commit_message }} (#$i)"
+          done
+
+      - name: Push changes to GitHub
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main 
