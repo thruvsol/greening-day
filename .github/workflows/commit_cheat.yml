@@ -1,0 +1,38 @@
+name: Auto Commit Scheduled
+on:
+  schedule:
+    # Berjalan setiap jam, pada menit ke-0
+    - cron: "0 * * * *"
+  
+  # Pemicu manual untuk testing
+  workflow_dispatch:
+
+jobs:
+  auto_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Modify LAST_UPDATED file
+        run: |
+          # Membuat perubahan unik agar selalu ada yang bisa di-commit
+          echo "Last scheduled update on $(date)" > LAST_UPDATED
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "nerddevlabs@gmail.com"
+          git config --local user.name "thruvsol"
+          git add LAST_UPDATED
+          # Commit hanya jika ada perubahan
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(bot): auto update activity"
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main 
